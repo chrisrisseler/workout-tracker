@@ -3,7 +3,7 @@ const logger = require("morgan");
 const mongoose = require("mongoose");
 const path = require('path')
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 
 const Workout = require("./models/workoutModel.js");
 const app = express();
@@ -28,7 +28,9 @@ app.get('/exercise', (req, res) => {
 })
 
 app.put('api/workouts/:id', ({ body, params }, res) => {
-    Workout.findByIdAndUpdate(params.id, { $push: { exercises: body } }, { new: true, runValidators: true }).then()
+    Workout.findByIdAndUpdate(params.id, { $push: { exercises: body } }, { new: true, runValidators: true }).then((response) => {
+        res.json(response)
+    })
 
 })
 
@@ -52,7 +54,12 @@ app.post("/api/workouts", ({ body }, res) => {
         });
 });
 
-// app.get('/api/workouts/range', ())
+app.get('/api/workouts/range', (req, res) => {
+    Workout.aggregate([{ $addFields: { sumExercises: { $sum: '$exercises.duration' } } }])
+        .then((response) => {
+            res.json(response)
+        })
+})
 
 app.listen(PORT, () => {
     console.log(`App running on port ${PORT}!`);
