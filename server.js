@@ -5,7 +5,7 @@ const path = require('path')
 
 const PORT = process.env.PORT || 3003;
 
-const Workout = require("./models/workoutModel.js");
+const { Workout } = require("./models");
 const app = express();
 
 app.use(logger("dev"));
@@ -37,7 +37,7 @@ app.get('/exercise', (req, res) => {
     res.sendFile(path.join(__dirname, "./public/exercise.html"))
 })
 
-app.put('api/workouts/:id', ({ body, params }, res) => {
+app.put('/api/workouts/:id', ({ body, params }, res) => {
     Workout.findByIdAndUpdate(params.id, { $push: { exercises: body } }, { new: true, runValidators: true }).then((response) => {
         res.json(response)
     })
@@ -45,7 +45,7 @@ app.put('api/workouts/:id', ({ body, params }, res) => {
 })
 
 app.get("/api/workouts", (req, res) => {
-    Workout.aggregate([{ $addFields: { sumExercises: { $sum: '$exercises.duration' } } }])
+    Workout.aggregate([{ $addFields: { totalDuration: { $sum: '$exercises.duration' } } }])
         .then((response) => {
             res.json(response)
         })
@@ -53,7 +53,7 @@ app.get("/api/workouts", (req, res) => {
 })
 
 app.post("/api/workouts", ({ body }, res) => {
-    const workout = new Workout(body);
+    // const workout = new Workout(body);
 
     Workout.create(body)
         .then(dbWorkout => {
@@ -65,7 +65,7 @@ app.post("/api/workouts", ({ body }, res) => {
 });
 
 app.get('/api/workouts/range', (req, res) => {
-    Workout.aggregate([{ $addFields: { sumExercises: { $sum: '$exercises.duration' } } }])
+    Workout.aggregate([{ $addFields: { totalDuration: { $sum: '$exercises.duration' } } }])
         .then((response) => {
             res.json(response)
         })
